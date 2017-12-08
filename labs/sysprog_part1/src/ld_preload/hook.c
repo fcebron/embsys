@@ -1,11 +1,11 @@
-// Question 8 : write here the buggy function without errors
+// Question 9 : write here the buggy function without errors
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
 
-// For question 12:
+// For question 13:
 #include <signal.h>
 #include <errno.h>
 #include <ptmx.h>
@@ -31,7 +31,7 @@ int knot_to_kmh_str(float not, size_t size, char * format, char * kmh_str)
     return kmh;
 }
 
-// Question 12 : write printf with a signal handler
+// Question 13 : write printf with a signal handler
 // struct PTMX ptmx;
 
 // void signals_handler(int signal_number)
