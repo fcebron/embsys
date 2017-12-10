@@ -26,9 +26,10 @@ int hndopen(struct OPTS opts, struct HANDLERS *handlers)
 
     // open semaphore
     handlers->semname = opts.sem;
-    handlers->sem = sem_open(opts.sem, O_RDWR|O_CREAT,
-                             S_IRUSR|S_IWUSR, 1);
-    if (handlers->sem == SEM_FAILED)
+    handlers->sem = sem_open(opts.sem, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR, 1);
+    //handlers->sem = sem_open(opts.sem, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR, 0);  // Sémaphore bloquant
+    printf("%d", SEM_FAILED);
+ if (handlers->sem == SEM_FAILED)
     {
         perror ("sem_open");
         goto err;

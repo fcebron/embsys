@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <sys/timerfd.h>
 
-#include <handler.h>
+#include "handler.h"
 
 //-----------------------------------------------------------------------------
 void hndinit(struct HANDLERS *handlers)
@@ -31,7 +31,20 @@ int hndopen(struct OPTS opts, struct HANDLERS *handlers)
     }
 
     // shared memory opening
-    // TODO
+    handlers->shm = opts.shm;
+    handlers->shmfd = shm_open(opts.shm, O_RDWR, S_IRUSR);
+    if (handlers->shmfd == -1) {
+      perror("shm_open");
+      goto err;
+    }
+
+    handlers->shdata = mmap(NULL, sizeof(handlers->shdata),
+			    PROT_READ, MAP_SHARED, handlers->shmfd, 0);
+    if (handlers->shdata == MAP_FAILED) {
+      perror("mmap");
+      goto err;
+    }
+    
 
     return 0;
 
