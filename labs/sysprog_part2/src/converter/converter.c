@@ -11,12 +11,12 @@
 
 struct DECIMAL_COORD
 {
-    int time;
+    float time;
     float latitude;
     float longitude;
 };
 
-struct DECIMAL_COORD decimal_coord = {0, 0.0, 0.0};
+struct DECIMAL_COORD decimal_coord = {0.0, 0.0, 0.0};
 struct HANDLERS handlers;
 
 //-----------------------------------------------------------------------------
@@ -28,12 +28,13 @@ void signals_handler(int signal_number)
 }
 
 //-----------------------------------------------------------------------------
-float to_decimal(float value)
+float to_decimal(int value)
 {
     int deg = floor(value/100);
-    float min = (value - deg*100)/100;
+    float min = (value - deg*100)/100.0;
 
-    return deg + min*100/60;
+    // return deg + min*100/60.0;
+    return (deg + min);
 }
 
 //-----------------------------------------------------------------------------
@@ -45,10 +46,15 @@ void *convert(void * mut)
     {
         sem_wait(handlers.sem);
         int time = handlers.shdata->time;
+        int latitude = handlers.shdata->latitude;
+        int longitude = handlers.shdata->longitude;
         sem_post(handlers.sem);
 
-        decimal_coord.time = time;
-
+        pthread_mutex_lock (mutex);
+        decimal_coord.time = to_decimal(time);
+        decimal_coord.latitude = to_decimal(latitude);
+        decimal_coord.longitude = to_decimal(longitude);
+        pthread_mutex_unlock (mutex);
         usleep(500000);
     }
 }
@@ -60,9 +66,11 @@ void *display(void * mut)
 
     while(1)
     {
-        printf("time: %d\n", decimal_coord.time);
+        pthread_mutex_lock (mutex);
+        printf("time: %f\n", decimal_coord.time);
         printf("latitude: %f\n", decimal_coord.latitude);
         printf("longitude: %f\n", decimal_coord.longitude);
+        pthread_mutex_unlock (mutex);
         printf("\n");
         fflush(stdout);
         sleep(1);
@@ -84,9 +92,14 @@ int main(int argc, char *argv [])
     // init mutex
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-    // init pthread
+    // init pthread1
     pthread_t thread1;
     if (pthread_create(&thread1, NULL, display, (void*) &mutex) != 0)
+        exit(EXIT_FAILURE);
+ 
+    // init pthread2
+    pthread_t thread2;
+    if (pthread_create(&thread2, NULL, convert, (void*) &mutex) != 0)
         exit(EXIT_FAILURE);
 
     // signals handler
@@ -98,6 +111,10 @@ int main(int argc, char *argv [])
 
     // join
     pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    
+    // Destroy the mutex:
+    pthread_mutex_destroy(&mutex);
 
 	// close
     hndclose(&handlers);

@@ -54,6 +54,7 @@ void *forward(void * mut)
         int len = sizeof(handlers.info_me);
 
         // TODO: sendto net_reader
+        sendto(handlers.sockfd, message, 22, 0, (struct sockaddr *) &handlers.info_me, len);
 
         printf("sent: %s\n", message);
         fflush(stdout);
